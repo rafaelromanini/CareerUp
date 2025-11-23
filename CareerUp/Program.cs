@@ -8,10 +8,36 @@ using CareerUp.Repositories;
 using CareerUp.Repositories.Interfaces;
 using CareerUp.Services;
 using CareerUp.Services.Interfaces;
+using CareerUp.Observability;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+
+// Configuração do OpenTelemetry com Jaeger
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource.AddService("CareerUp.Api"))
+    .WithTracing(tracing =>
+    {
+        tracing
+            .AddSource(Tracing.GetActivitySource().Name)
+            .AddAspNetCoreInstrumentation()
+            .AddEntityFrameworkCoreInstrumentation(options =>
+            {
+                options.SetDbStatementForText = true;
+                options.SetDbStatementForStoredProcedure = true;
+            })
+            .AddHttpClientInstrumentation()
+            .AddOtlpExporter(options =>
+            {
+                options.Endpoint = new Uri("http://localhost:4318/v1/traces");
+                options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.HttpProtobuf;
+            });
+    });
 
 // Add services to the container.
 
