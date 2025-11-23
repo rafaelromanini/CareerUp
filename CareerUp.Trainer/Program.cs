@@ -31,14 +31,14 @@ class Program
         );
 
         var preview = dataView.Preview(maxRows: 100);
-        Console.WriteLine($"✅ {preview.RowView.Length} registros carregados para preview");
+        Console.WriteLine($"✅ {preview.RowView.Length} registros carregados");
         Console.WriteLine($"   Colunas: Cargo, HabilidadePrimaria, HabilidadeSecundaria, HabilidadeTerciaria, Recomendacao\n");
 
-        // 3. Construir pipeline de treinamento
+        // 3. Construir pipeline de treinamento SEM MapValueToKey na entrada
         Console.WriteLine("🔧 Construindo pipeline de transformação...");
         
         var pipeline = mlContext.Transforms.Text
-            // Concatenar todas as features de entrada em um único vetor de texto
+            // Featurizar texto das colunas de entrada
             .FeaturizeText(
                 outputColumnName: "Features",
                 new TextFeaturizingEstimator.Options
@@ -52,17 +52,17 @@ class Program
                 nameof(CareerData.HabilidadeSecundaria),
                 nameof(CareerData.HabilidadeTerciaria)
             )
-            // Mapear a coluna de recomendação como label
+            // Converter coluna de saída (Recomendacao) para Key (índice numérico)
             .Append(mlContext.Transforms.Conversion.MapValueToKey(
                 outputColumnName: "Label",
                 inputColumnName: nameof(CareerData.Recomendacao)
             ))
-            // Usar algoritmo de classificação multiclasse (SDCA)
+            // Treinar classificador multiclasse
             .Append(mlContext.MulticlassClassification.Trainers.SdcaMaximumEntropy(
                 labelColumnName: "Label",
                 featureColumnName: "Features"
             ))
-            // Converter label de volta para texto
+            // Converter Label previsto de volta para texto
             .Append(mlContext.Transforms.Conversion.MapKeyToValue(
                 outputColumnName: "PredictedLabel",
                 inputColumnName: "PredictedLabel"

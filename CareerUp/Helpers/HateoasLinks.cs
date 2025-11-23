@@ -77,5 +77,57 @@ namespace CareerUp.Helpers
         {
             return $"{request.Scheme}://{request.Host}{path}";
         }
+
+        /// <summary>
+        /// Gera links HATEOAS para uma recomendação
+        /// </summary>
+        public static List<Link> GenerateRecomendacaoLinks(long idRecomendacao, long idUsuario, HttpContext context)
+        {
+            var baseUrl = GetBaseUrl(context.Request, "/api/v1/recomendacoes");
+            
+            var links = new List<Link>
+            {
+                new("self", $"{baseUrl}/{idRecomendacao}", "GET"),
+                new("minhas-recomendacoes", $"{baseUrl}/minhas", "GET"),
+                new("gerar-nova", $"{baseUrl}/gerar", "POST"),
+                new("delete", $"{baseUrl}/{idRecomendacao}", "DELETE")
+            };
+
+            return links;
+        }
+
+        /// <summary>
+        /// Gera links de paginação
+        /// </summary>
+        public static List<Link> GeneratePaginationLinks(
+            string resourcePath,
+            int pageNumber,
+            int pageSize,
+            int totalCount,
+            HttpContext context)
+        {
+            var baseUrl = GetBaseUrl(context.Request, $"/api/v1/recomendacoes/{resourcePath}");
+            var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+            var links = new List<Link>
+            {
+                new("self", $"{baseUrl}?pageNumber={pageNumber}&pageSize={pageSize}", "GET"),
+                new("first", $"{baseUrl}?pageNumber=1&pageSize={pageSize}", "GET")
+            };
+
+            if (pageNumber > 1)
+            {
+                links.Add(new("previous", $"{baseUrl}?pageNumber={pageNumber - 1}&pageSize={pageSize}", "GET"));
+            }
+
+            if (pageNumber < totalPages)
+            {
+                links.Add(new("next", $"{baseUrl}?pageNumber={pageNumber + 1}&pageSize={pageSize}", "GET"));
+            }
+
+            links.Add(new("last", $"{baseUrl}?pageNumber={totalPages}&pageSize={pageSize}", "GET"));
+
+            return links;
+        }
     }
 }

@@ -8,6 +8,8 @@ using CareerUp.Repositories;
 using CareerUp.Repositories.Interfaces;
 using CareerUp.Services;
 using CareerUp.Services.Interfaces;
+using CareerUp.Models.ML;
+using Microsoft.ML;
 using CareerUp.Observability;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -51,10 +53,28 @@ builder.Services.AddDbContext<OracleDbContext>(options =>
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<ILoginUsuarioRepository, LoginUsuarioRepository>();
 builder.Services.AddScoped<IHabilidadeRepository, HabilidadeRepository>();
+builder.Services.AddScoped<IRecomendacaoRepository, RecomendacaoRepository>();
+
+// Configuração do ML.NET - Carrega modelo treinado (Singleton)
+var modelPath = Path.Combine(AppContext.BaseDirectory, "MLModel", "CareerModel.zip");
+if (!File.Exists(modelPath))
+{
+    throw new FileNotFoundException($"Modelo ML.NET não encontrado: {modelPath}");
+}
+
+var mlContext = new MLContext(seed: 42);
+ITransformer mlModel = mlContext.Model.Load(modelPath, out var modelSchema);
+
+// Criar PredictionEngine normalmente (agora CareerInput tem a coluna Recomendacao)
+var predictionEngine = mlContext.Model.CreatePredictionEngine<CareerInput, CareerPrediction>(mlModel);
+
+builder.Services.AddSingleton(predictionEngine);
 
 // Configuração de Services (Scoped)
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+builder.Services.AddScoped<IMLPredictionService, MLPredictionService>();
+builder.Services.AddScoped<IRecomendacaoService, RecomendacaoService>();
 
 // Configuração de Autenticação JWT
 var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key não configurada");
