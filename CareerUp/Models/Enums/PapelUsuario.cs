@@ -1,18 +1,19 @@
 namespace CareerUp.Models.Enums
 {
     /// <summary>
-    /// Papel/função do usuário no sistema
+    /// Papel/função do usuário no sistema.
+    /// Valores: 0 = USUARIO (padrão), 1 = GERENTE
     /// </summary>
     public enum PapelUsuario
     {
         /// <summary>
-        /// Usuário comum
+        /// Usuário comum (valor: 0)
         /// </summary>
-        USUARIO,
+        USUARIO = 0,
 
         /// <summary>
-        /// Gerente com permissões administrativas
+        /// Gerente com permissões administrativas (valor: 1)
         /// </summary>
-        GERENTE
+        GERENTE = 1
     }
 }
