@@ -54,6 +54,23 @@ public class RecomendacaoRepository : IRecomendacaoRepository
         return (items, totalCount);
     }
 
+    public async Task<(List<Recomendacao> items, int totalCount)> GetByUsuarioIdAndMonthAsync(long idUsuario, int mes, int pageNumber, int pageSize)
+    {
+        var query = _context.Recomendacoes
+            .Include(r => r.Usuario)
+            .Where(r => r.IdUsuario == idUsuario && r.DataGeracao.Month == mes)
+            .OrderByDescending(r => r.DataGeracao);
+
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (items, totalCount);
+    }
+
     public async Task<bool> DeleteAsync(long idRecomendacao)
     {
         var recomendacao = await _context.Recomendacoes.FindAsync(idRecomendacao);

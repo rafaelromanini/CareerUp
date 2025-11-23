@@ -28,6 +28,16 @@ public interface IRecomendacaoService
         int pageSize);
 
     /// <summary>
+    /// Lista recomendações do usuário filtradas por mês com paginação.
+    /// </summary>
+    Task<(List<RecomendacaoResponseDto> items, int totalCount)> GetByUsuarioIdAndMonthAsync(
+        long idUsuario, 
+        long idUsuarioAutenticado, 
+        int mes,
+        int pageNumber, 
+        int pageSize);
+
+    /// <summary>
     /// Exclui uma recomendação.
     /// </summary>
     Task<bool> DeleteAsync(long idRecomendacao, long idUsuarioAutenticado);

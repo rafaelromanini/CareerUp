@@ -23,6 +23,11 @@ public interface IRecomendacaoRepository
     Task<(List<Recomendacao> items, int totalCount)> GetByUsuarioIdAsync(long idUsuario, int pageNumber, int pageSize);
 
     /// <summary>
+    /// Lista recomendações de um usuário filtradas por mês com paginação.
+    /// </summary>
+    Task<(List<Recomendacao> items, int totalCount)> GetByUsuarioIdAndMonthAsync(long idUsuario, int mes, int pageNumber, int pageSize);
+
+    /// <summary>
     /// Exclui uma recomendação.
     /// </summary>
     Task<bool> DeleteAsync(long idRecomendacao);

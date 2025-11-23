@@ -15,6 +15,7 @@ using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Asp.Versioning;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -125,6 +126,19 @@ builder.Services.AddHealthChecks()
 
 builder.Services.AddControllers();
 
+// Configuração de API Versioning
+builder.Services.AddApiVersioning(options =>
+{
+    options.DefaultApiVersion = new ApiVersion(1, 0);
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    options.ReportApiVersions = true;
+})
+.AddApiExplorer(options =>
+{
+    options.GroupNameFormat = "'v'VVV";
+    options.SubstituteApiVersionInUrl = true;
+});
+
 // Configuração do Swagger com JWT
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -134,6 +148,18 @@ builder.Services.AddSwaggerGen(options =>
         Title = "CareerUp API",
         Version = "v1",
         Description = "API REST para sistema de recomendação de carreira com IA",
+        Contact = new OpenApiContact
+        {
+            Name = "CareerUp Team",
+            Email = "contact@careerup.com"
+        }
+    });
+
+    options.SwaggerDoc("v2", new OpenApiInfo
+    {
+        Title = "CareerUp API",
+        Version = "v2",
+        Description = "API REST para sistema de recomendação de carreira com IA - v2 com filtro por mês",
         Contact = new OpenApiContact
         {
             Name = "CareerUp Team",
@@ -185,6 +211,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "CareerUp API v1");
+        options.SwaggerEndpoint("/swagger/v2/swagger.json", "CareerUp API v2");
         options.RoutePrefix = string.Empty; // Swagger na raiz
     });
 }

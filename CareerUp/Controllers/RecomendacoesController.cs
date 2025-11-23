@@ -5,6 +5,7 @@ using CareerUp.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Asp.Versioning;
 
 namespace CareerUp.Controllers;
 
@@ -12,7 +13,8 @@ namespace CareerUp.Controllers;
 /// Controller para gerenciamento de recomendações de carreira.
 /// </summary>
 [ApiController]
-[Route("api/v1/recomendacoes")]
+[Route("api/v{version:apiVersion}/recomendacoes")]
+[ApiVersion("1.0")]
 [Authorize]
 [Produces("application/json")]
 public class RecomendacoesController : ControllerBase

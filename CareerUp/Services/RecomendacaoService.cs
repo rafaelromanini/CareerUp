@@ -116,6 +116,38 @@ public class RecomendacaoService : IRecomendacaoService
         return (dtos, totalCount);
     }
 
+    public async Task<(List<RecomendacaoResponseDto> items, int totalCount)> GetByUsuarioIdAndMonthAsync(
+        long idUsuario,
+        long idUsuarioAutenticado,
+        int mes,
+        int pageNumber,
+        int pageSize)
+    {
+        // Verificar permissão
+        var usuarioAutenticado = await _usuarioRepository.GetByIdAsync(idUsuarioAutenticado);
+        if (usuarioAutenticado?.Papel != PapelUsuario.GERENTE && idUsuario != idUsuarioAutenticado)
+        {
+            _logger.LogWarning(
+                "Usuário ID={IdUsuario} tentou listar recomendações do usuário ID={IdTarget} sem permissão",
+                idUsuarioAutenticado, idUsuario);
+            throw new UnauthorizedAccessException("Você não tem permissão para acessar recomendações de outros usuários");
+        }
+
+        // Validar mês
+        if (mes < 1 || mes > 12)
+        {
+            _logger.LogWarning("Mês inválido: {Mes}", mes);
+            throw new ArgumentException("Mês deve estar entre 1 e 12", nameof(mes));
+        }
+
+        var (items, totalCount) = await _recomendacaoRepository.GetByUsuarioIdAndMonthAsync(
+            idUsuario, mes, pageNumber, pageSize);
+
+        var dtos = items.Select(MapToDto).ToList();
+
+        return (dtos, totalCount);
+    }
+
     public async Task<bool> DeleteAsync(long idRecomendacao, long idUsuarioAutenticado)
     {
         var recomendacao = await _recomendacaoRepository.GetByIdAsync(idRecomendacao);
